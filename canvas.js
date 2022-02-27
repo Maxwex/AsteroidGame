@@ -1,12 +1,15 @@
 var canvas = document.getElementById("canvas");
-
+var Scores;
 canvas.width = window.innerWidth;
 canvas.height = canvas.width/2.2;
 
 var c = canvas.getContext("2d");
 var x = 0;
 
+
+
 let mouseX = 0;
+let score = 0;
 let meteorSpawnRate = 800;
 let passedTime = 0;
 
@@ -15,6 +18,7 @@ const meteors = [];
 class Meteor {
   rotation = 0
   rotationSpeed = 5
+  destroyed = false
   constructor(posX, posY,image) {
     this.posX = posX;
     this.posY = posY;
@@ -23,6 +27,7 @@ class Meteor {
     this.rotationSpeed = Math.round(Math.random() * 10)-5;
   }
   update() {
+    if (this.destroyed)return;
     this.posY += this.speed;
     this.draw();
     this.rotation += this.rotationSpeed;
@@ -45,18 +50,29 @@ class Projectile {
   destroy() {
     projectiles.remove(this);
   }
-  collision(){
+  collision(meteor){
+    if(meteor.destroyed)return;
+    if(Math.sqrt(Math.pow(Math.abs(this.posX-meteor.posX),2)
+      +Math.pow(Math.abs(this.posY-meteor.posY),2))<50){
+        meteor.destroyed = true;
+        this.exploded = true;
+        score+=100;
+    }
 
   }
   update(){
     if (this.posY<-100||this.exploded){
       return;
     }
+
     this.posY -= this.speed;
+    for(var i = 0;i<meteors.length;i++){
+      this.collision(meteors[i]);
+    }
     this.draw();
   }
   draw(){
-    drawRect(this.posX, this.posY, 5, 60, "#880000");
+    drawRect(this.posX, this.posY, 5, 40, "#880000");
   }
 }
 const plane = {
@@ -83,15 +99,26 @@ const plane = {
     if(projectiles.length>10){
       projectiles.shift();
     }
-    projectiles.push(new Projectile(this.posX,this.posY-50));
+    projectiles.push(new Projectile(this.posX,this.posY-130));
     this.loaded=200;
+  },
+  checkCollision : function(meteor){
+    if(meteor.destroyed)return;
+    var xDist = Math.abs(this.posX-meteor.posX);
+    var yDist = Math.abs((this.posY)-meteor.posY);
+    if(yDist > 200||xDist > 200)return;
+    if(yDist+xDist<180){
+      console.log("ouch");
+      meteor.destroyed= true;
+    }
+
   }
 };
 function spawnMeteor(){
   if (meteors.length > 15 ) {
     meteors.shift();
     }
-  meteors.push(new Meteor(Math.random()*canvas.width-canvas.width/2,
+  meteors.push(new Meteor(Math.random()*canvas.width,
     -100, (Math.random()<0.5) ? "meteor2.png" : "meteor.png" ));
   passedTime = 0;
 
@@ -121,13 +148,19 @@ function update(){
   plane.draw();
   for(var i=0;i<meteors.length;i++){
     meteors[i].update();
+    plane.checkCollision(meteors[i]);
   };
   passedTime += 20;
   if(passedTime > meteorSpawnRate){
     spawnMeteor();
     console.log(meteors.length);
   }
-
+  updateScore();
+}
+function updateScore(){
+    c.font = "40px Verdana";
+    c.fillStyle = "yellow";
+    c.fillText("Score: "+score, 1600, 50);
 }
 function shoot(){
   plane.shoot();

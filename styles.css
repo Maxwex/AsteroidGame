@@ -17,6 +17,13 @@ h1{
 
 
 }
+h2{
+	position: absolute;
+  left: 90%;
+  transform: translate(-50%, -50%);
+	margin-top: 2%;
+	color: yellow;
+}
 #canvas{
 	width: 100vw;
 	background-color: #333;
