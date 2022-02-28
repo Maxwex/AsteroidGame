@@ -2,10 +2,10 @@ body{
 	margin: 0px;
 
 }
-.container{
+#gamearea{
 	width: 100%;
 	margin: 0px;
-	position: absolute;
+	position: relative;
 }
 h1{
 	position: absolute;
@@ -15,6 +15,36 @@ h1{
 	margin-top: 2%;
 	color: red;
 
+
+}
+#prompt{
+	position: absolute;
+	top: 50%;
+  left: 50%;
+	width : 15%;
+	padding: 2vw;
+  transform: translate(-50%, -50%);
+	color: black;
+	background-color: rgba(255, 255, 255, 0.5);
+	display: none;
+}
+#restartButton{
+	position: relative;
+
+  left: 50%;
+  transform: translate(-50%, 0%);
+	color: black;
+	display: block;
+	font-size: 1vw;
+	height: 2vw;
+	width:6vw;
+	border-radius: .3vw;
+	font-family: sans-serif;
+	margin-bottom: 1vw;
+}
+p{
+	text-align: center;
+	font-size: 1.5vw;
 
 }
 h2{

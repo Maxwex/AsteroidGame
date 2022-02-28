@@ -1,12 +1,12 @@
 var canvas = document.getElementById("canvas");
+var restartButton = document.getElementById("restartButton");
+var prompt = document.getElementById("prompt");
+
 var Scores;
 canvas.width = window.innerWidth;
 canvas.height = canvas.width/2.2;
 
 var c = canvas.getContext("2d");
-var x = 0;
-
-
 
 let mouseX = 0;
 let score = 0;
@@ -57,6 +57,10 @@ class Projectile {
         meteor.destroyed = true;
         this.exploded = true;
         score+=100;
+
+        if(score%1000==1){
+          meteorSpawnRate * 0.9
+        }
     }
 
   }
@@ -91,6 +95,7 @@ const plane = {
       this.posX -= this.speed;
     }
     this.loaded -= 20;
+    this.draw();
   },
   shoot : function(){
     if(this.loaded>0){
@@ -110,14 +115,17 @@ const plane = {
     if(yDist+xDist<180){
       console.log("ouch");
       meteor.destroyed= true;
+      this.crash();
     }
-
+  },
+  crash : function(){
+    stop();
   }
 };
 function spawnMeteor(){
-  if (meteors.length > 15 ) {
+  if (meteors.length > 25 ) {
     meteors.shift();
-    }
+  }
   meteors.push(new Meteor(Math.random()*canvas.width,
     -100, (Math.random()<0.5) ? "meteor2.png" : "meteor.png" ));
   passedTime = 0;
@@ -137,7 +145,26 @@ function clear(){
   c.fillRect(0,0,canvas.width,canvas.height);
 }
 function start(){
-  setInterval(update,20);
+  this.interval = setInterval(update,20);
+}
+function restart(){
+  meteorSpawnRate = 800;
+  prompt.style.display = "none";
+  score = 0;
+  for(var i=0;i<meteors.length;i++){
+    meteors[i].destroyed = true;
+  }
+  for(var i=0;i<projectiles.length;i++){
+    projectiles[i].exploded = true;
+  }
+  start();
+}
+function stop(){
+  clearInterval(this.interval);
+  prompt.style.display = "block";
+  var message = "Ouuups! You crashed! Your score was " + score + "!";
+  document.getElementById("message").innerHTML = message;
+
 }
 function update(){
   clear();
@@ -145,7 +172,6 @@ function update(){
     projectiles[i].update();
   };
   plane.update();
-  plane.draw();
   for(var i=0;i<meteors.length;i++){
     meteors[i].update();
     plane.checkCollision(meteors[i]);
@@ -156,6 +182,7 @@ function update(){
     console.log(meteors.length);
   }
   updateScore();
+
 }
 function updateScore(){
     c.font = "40px Verdana";
