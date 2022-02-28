@@ -23,7 +23,7 @@ class Meteor {
     this.posX = posX;
     this.posY = posY;
     this.image = image;
-    this.speed = Math.random() *5+2;
+    this.speed = (Math.random() *5+2)/2000*canvas.width;
     this.rotationSpeed = Math.round(Math.random() * 10)-5;
   }
   update() {
@@ -36,12 +36,12 @@ class Meteor {
     c.save();
     c.translate(this.posX, this.posY);
     c.rotate(this.rotation*Math.PI/360);
-    drawImage(0, 0, 100, 100, this.image);
+    drawImage(0, 0, 100/2000*canvas.width, 100/2000*canvas.width, this.image);
     c.restore();
   }
 }
 class Projectile {
-  speed = 10
+  speed = 10/2000*canvas.width
   exploded = false
   constructor(posX, posY) {
     this.posX = posX;
@@ -76,16 +76,16 @@ class Projectile {
     this.draw();
   }
   draw(){
-    drawRect(this.posX, this.posY, 5, 40, "#880000");
+    drawRect(this.posX, this.posY, 5, 40/2000*canvas.width, "#880000");
   }
 }
 const plane = {
   loaded: 200,
-  speed: 15,
+  speed: 15/2000*canvas.width,
   posX : canvas.width/2,
   posY : canvas.height/2,
   draw : function(){
-    drawImage(this.posX,this.posY, 300, 300, "fplane.png");
+    drawImage(this.posX,this.posY, 300/2000*canvas.width, 300/2000*canvas.width, "fplane.png");
   },
   update : function(){
     if(mouseX > this.posX +this.speed){
@@ -104,15 +104,15 @@ const plane = {
     if(projectiles.length>10){
       projectiles.shift();
     }
-    projectiles.push(new Projectile(this.posX,this.posY-130));
+    projectiles.push(new Projectile(this.posX,this.posY-130/2000*canvas.width));
     this.loaded=200;
   },
   checkCollision : function(meteor){
     if(meteor.destroyed)return;
     var xDist = Math.abs(this.posX-meteor.posX);
     var yDist = Math.abs((this.posY)-meteor.posY);
-    if(yDist > 200||xDist > 200)return;
-    if(yDist+xDist<180){
+    if(yDist > 200/2000*canvas.width||xDist > 200/2000*canvas.width)return;
+    if(yDist+xDist<180/2000*canvas.width){
       console.log("ouch");
       meteor.destroyed= true;
       this.crash();
@@ -185,9 +185,9 @@ function update(){
 
 }
 function updateScore(){
-    c.font = "40px Verdana";
+    c.font = 40/2000*canvas.width + "px Verdana";
     c.fillStyle = "yellow";
-    c.fillText("Score: "+score, 1600, 50);
+    c.fillText("Score: "+score, 1600/2000*canvas.width, 50/2000*canvas.width);
 }
 function shoot(){
   plane.shoot();
