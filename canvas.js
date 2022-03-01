@@ -11,10 +11,14 @@ var c = canvas.getContext("2d");
 let mouseX = 0;
 let score = 0;
 let meteorSpawnRate = 800;
+let meteorSpeed = 2;
 let passedTime = 0;
-
+const cannonSound = new sound("sounds/laser.mp3");
+const explosionSound = new sound("sounds/explosion.mp3");
+const crashSound = new sound("sounds/crash.mp3");
 const projectiles = [];
 const meteors = [];
+const stars = [];
 class Meteor {
   rotation = 0
   rotationSpeed = 5
@@ -23,11 +27,11 @@ class Meteor {
     this.posX = posX;
     this.posY = posY;
     this.image = image;
-    this.speed = (Math.random() *5+2)/2000*canvas.width;
+    this.speed = (Math.random() *5+meteorSpeed)/2000*canvas.width;
     this.rotationSpeed = Math.round(Math.random() * 10)-5;
   }
   update() {
-    if (this.destroyed)return;
+    if (this.destroyed||this.posY>canvas.width+50)return;
     this.posY += this.speed;
     this.draw();
     this.rotation += this.rotationSpeed;
@@ -57,15 +61,17 @@ class Projectile {
         meteor.destroyed = true;
         this.exploded = true;
         score+=100;
-
+        explosionSound.stop();
+        explosionSound.play();
         if(score%1000==1){
-          meteorSpawnRate * 0.9
+          meteorSpawnRate *0.8;
+          meteorSpeed+2;
         }
     }
 
   }
   update(){
-    if (this.posY<-100||this.exploded){
+    if (this.posY<-50||this.exploded){
       return;
     }
 
@@ -77,6 +83,23 @@ class Projectile {
   }
   draw(){
     drawRect(this.posX, this.posY, 5, 40/2000*canvas.width, "#880000");
+  }
+}
+class Star{
+  constructor(posX, posY){
+    this.posX = posX;
+    this.posY = posY;
+  }
+  update() {
+    if (this.posY>canvas.height){
+      this.posY = 0;
+      this.posX = Math.round(Math.random()*canvas.width);
+    }
+    this.posY += 1;
+    this.draw();
+  }
+  draw() {
+    drawRect(this.posX, this.posY, 2,2,"white");
   }
 }
 const plane = {
@@ -105,6 +128,7 @@ const plane = {
       projectiles.shift();
     }
     projectiles.push(new Projectile(this.posX,this.posY-130/2000*canvas.width));
+    cannonSound.play();
     this.loaded=200;
   },
   checkCollision : function(meteor){
@@ -119,9 +143,25 @@ const plane = {
     }
   },
   crash : function(){
+    crashSound.play();
     stop();
   }
 };
+
+function sound(src) {
+  this.sound = document.createElement("audio");
+  this.sound.src = src;
+  this.sound.setAttribute("preload", "auto");
+  this.sound.setAttribute("controls", "none");
+  this.sound.style.display = "none";
+  document.body.appendChild(this.sound);
+  this.play = function(){
+    this.sound.play();
+  }
+  this.stop = function(){
+    this.sound.pause();
+  }
+}
 function spawnMeteor(){
   if (meteors.length > 25 ) {
     meteors.shift();
@@ -129,6 +169,13 @@ function spawnMeteor(){
   meteors.push(new Meteor(Math.random()*canvas.width,
     -100, (Math.random()<0.5) ? "meteor2.png" : "meteor.png" ));
   passedTime = 0;
+
+}
+function spawnStars(){
+  for(var s=0;s<50;s++){
+    stars.push(new Star(Math.round(Math.random()*canvas.width),
+    Math.round(Math.random()*canvas.height)));
+  }
 
 }
 function drawRect(posx, posy, width, height, color){
@@ -140,15 +187,18 @@ function drawImage(posx, posy, width, height, src){
   image.src = src;
   c.drawImage(image, posx-width/2,posy-height/2,width,height);
 }
+
 function clear(){
-  c.fillStyle = "#222222";
+  c.fillStyle = "#0a0a0a";
   c.fillRect(0,0,canvas.width,canvas.height);
 }
 function start(){
+  spawnStars();
   this.interval = setInterval(update,20);
 }
 function restart(){
   meteorSpawnRate = 800;
+  meteorSpeed = 2;
   prompt.style.display = "none";
   score = 0;
   for(var i=0;i<meteors.length;i++){
@@ -168,18 +218,22 @@ function stop(){
 }
 function update(){
   clear();
+  for(var i=0;i<stars.length;i++){
+    stars[i].update();
+  }
+
+
   for(var i=0;i<projectiles.length;i++){
     projectiles[i].update();
-  };
+  }
   plane.update();
   for(var i=0;i<meteors.length;i++){
     meteors[i].update();
     plane.checkCollision(meteors[i]);
-  };
+  }
   passedTime += 20;
   if(passedTime > meteorSpawnRate){
     spawnMeteor();
-    console.log(meteors.length);
   }
   updateScore();
 
