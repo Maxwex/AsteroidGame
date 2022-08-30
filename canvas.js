@@ -106,7 +106,7 @@ const plane = {
   loaded: 200,
   speed: 15/2000*canvas.width,
   posX : canvas.width/2,
-  posY : canvas.height+canvas.height/2,
+  posY : 3*canvas.height/4,
   draw : function(){
     drawImage(this.posX,this.posY, 300/2000*canvas.width, 300/2000*canvas.width, "fplane.png");
   },
